@@ -5,12 +5,12 @@
 // 1) انسخ إعدادات مشروعك من Firebase:
 //    Project settings ← Your apps ← Web app ← firebaseConfig
 window.FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyDHaidYVE6cfzbDCSaytDwvN3Sy-5zPJHI",
+  authDomain: "mzayinalhalal.firebaseapp.com",
+  projectId: "mzayinalhalal",
+  storageBucket: "mzayinalhalal.firebasestorage.app",
+  messagingSenderId: "40320780755",
+  appId: "1:40320780755:web:542499ce0f34da22e1c726"
 };
 
 // 2) بيانات الحساب البنكي اللي يحوّل عليه أصحاب المرحان
