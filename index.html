@@ -83,12 +83,17 @@ a.link{color:var(--burg);font-weight:700;font-size:14px}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 /* ===================== ثوابت ===================== */
-const BREEDS=['حري','نعيمي','نجدي','سواكني','عربي','بربري'];
+const LOCAL_SHEEP=['الحري','النجدي','النعيمي','الرفيدي'];
+const LOCAL_GOATS=['العارضية','البيشية','الحجازية','الحبشية','الزميرية','المحايلية','المصرية'];
+const IMPORTED=['السواكني','الصومالي','الاسترالي','الروماني','الميدي'];
+const BREEDS=[...LOCAL_SHEEP,...IMPORTED];
+const nb=s=>String(s||'').trim().replace(/^ال/,'');
+const sameBreed=(a,b)=>nb(a)===nb(b);
+function adBreeds(animal,origin){if(origin==='مستورد')return IMPORTED;if(origin==='محلي')return animal==='ماعز'?LOCAL_GOATS:LOCAL_SHEEP;return animal==='ماعز'?[...LOCAL_GOATS,...IMPORTED]:animal==='غنم'?[...LOCAL_SHEEP,...IMPORTED]:[...LOCAL_SHEEP,...LOCAL_GOATS,...IMPORTED]}
 const TYPES=['طليان','رخال','نعاج','فحل'];
 const AGES=['جذع','ثني','رباع','سديس'];
 const ANIMALS=['غنم','ماعز'];
 const ORIGINS=['محلي','مستورد'];
-const AD_BREEDS={'غنم':['نعيمي','نجدي','حري','سواكني','عربي','بربري','روماني','أسترالي','تركي','سوداني','صومالي'],'ماعز':['عارضي','شامي','نجدي','حجازي','جبلي','بلدي','صومالي','سوداني','بور']};
 const AD_TYPES=['ذكور','إناث','مختلط','فحل','مواليد'];
 const AD_DAYS=30;
 const CFG_BANK=window.BANK||{};
@@ -112,7 +117,7 @@ function compress(file,max=900,q=.62){return new Promise((res,rej)=>{const r=new
 const CFG=window.FIREBASE_CONFIG||{};
 const READY=!!(CFG.apiKey&&CFG.projectId);
 let auth,db;
-const S={user:null,isAdmin:false,myMarah:null,marahs:[],items:[],requests:[],allMarahs:[],receipts:[],settings:{},ads:[],mkKind:'الكل',mkAnimal:'الكل',mkOrigin:'الكل',mkQ:'',filter:'الكل',q:'',loaded:false};
+const S={user:null,isAdmin:false,myMarah:null,marahs:[],items:[],requests:[],allMarahs:[],receipts:[],settings:{},ads:[],mkKind:'الكل',mkBreed:'الكل',mkAnimal:'الكل',mkOrigin:'الكل',mkQ:'',filter:'الكل',q:'',loaded:false};
 const now=()=>Date.now();
 const isLive=m=>m&&m.active&&(!m.activeUntil||m.activeUntil>now());
 
@@ -161,7 +166,7 @@ function contactBtns(m){
 }
 function marahCard(m){
   const its=itemsOf(m.id).filter(i=>i.status!=='مباع');
-  const shown=S.filter==='الكل'?its:its.filter(i=>i.breed===S.filter);
+  const shown=S.filter==='الكل'?its:its.filter(i=>sameBreed(i.breed,S.filter));
   const first=shown[0]||its[0];
   const n=waNum(m.phone);
   return `<div class="card">
@@ -175,7 +180,7 @@ function filtered(){
   const q=S.q.trim();
   return S.marahs.filter(m=>{
     const its=itemsOf(m.id);
-    const okF=S.filter==='الكل'||its.some(i=>i.breed===S.filter&&i.status!=='مباع');
+    const okF=S.filter==='الكل'||its.some(i=>sameBreed(i.breed,S.filter)&&i.status!=='مباع');
     const okQ=!q||[m.name,m.ownerName,m.region,...its.map(i=>i.breed+' '+i.type)].join(' ').includes(q);
     return okF&&okQ;
   }).sort((a,b)=>(b.verified?1:0)-(a.verified?1:0)||(b.awards||0)-(a.awards||0));
@@ -301,23 +306,23 @@ function viewMazayen(){
 const adLive=a=>a.status==='active'&&a.expiresAt>now();
 function chipRow(key,vals){return `<div class="chips" style="padding:0">${['الكل',...vals].map(v=>`<button class="chip mk ${S[key]===v?'on':''}" data-k="${key}" data-v="${v}">${v}</button>`).join('')}</div>`}
 function adCard(a){
-  const mine=S.user&&S.user.uid===a.uid;const n=waNum(a.phone);const sell=a.kind==='بيع';
+  const mine=S.user&&S.user.uid===a.uid;const n=waNum(a.phone);const sell=a.kind==='بيع';const kindLbl=sell?'للبيع':'للشراء';
   const left=a.expiresAt?Math.max(0,Math.ceil((a.expiresAt-now())/86400000)):0;
   return `<div class="item">${a.photo?`<img src="${a.photo}" alt="${esc(a.breed||a.animal)}">`:''}
-  <div class="row"><b style="font-size:17px">${sell?'للبيع':'مطلوب'}: ${esc(a.count)} ${esc(a.animal)} ${esc(a.breed||'')}</b><span class="badge ${sell?'ok':'warn'}">${sell?'بيع':'مطلوب'}</span></div>
+  <div class="row"><b style="font-size:17px">${kindLbl}: ${esc(a.count)} ${esc(a.animal)} ${esc(a.breed||'')}</b><span class="badge ${sell?'ok':'warn'}">${sell?'بيع':'شراء'}</span></div>
   <div class="seg" style="font-size:13px"><span class="badge off">${esc(a.origin)}</span><span class="badge off">${esc(a.type)}</span>${a.age?`<span class="badge off">${esc(a.age)}</span>`:''}<span class="badge off">${ic(I.pin,'#6B5A45',12)}${esc(a.city)}</span></div>
   <div class="muted">${sell?'السعر':'الميزانية'}: <b style="color:var(--ink)">${a.price?money(a.price)+(sell?' للرأس':''):(sell?'على السوم':'مفتوحة')}</b></div>
   ${a.note?`<div class="muted">${esc(a.note)}</div>`:''}
-  ${n&&!mine?`<div class="grid2"><a class="btn btn-line" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent('السلام عليكم، بخصوص إعلانك في مزاين الحلال: '+(sell?'للبيع':'مطلوب')+' '+a.count+' '+a.animal+' '+(a.breed||''))}">${ic(I.wa,'#4A2E1A',18)}واتساب</a><a class="btn btn-line" href="tel:+${n}">${ic(I.phone,'#4A2E1A',18)}اتصال</a></div>`:''}
+  ${n&&!mine?`<div class="grid2"><a class="btn btn-line" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent('السلام عليكم، بخصوص إعلانك في مزاين الحلال: '+(sell?'للبيع':'للشراء')+' '+a.count+' '+a.animal+' '+(a.breed||''))}">${ic(I.wa,'#4A2E1A',18)}واتساب</a><a class="btn btn-line" href="tel:+${n}">${ic(I.phone,'#4A2E1A',18)}اتصال</a></div>`:''}
   ${mine||S.isAdmin?`<div class="seg">${mine&&!adLive(a)?`<a class="btn btn-reg btn-sm" href="#payad-${a.id}">${a.status==='pending'?'ادفع '+adPrice()+' ريال وارفع الإيصال':'تجديد — '+adPrice()+' ريال'}</a>`:''}<button class="btn btn-red btn-sm" onclick="delAd('${a.id}')">حذف</button><span class="muted" style="align-self:center;font-size:12px">${adLive(a)?'باقي '+left+' يوم':a.status==='pending'?(a.receiptSent?'بانتظار المراجعة':'بانتظار الدفع'):'منتهي'}</span></div>`:''}</div>`;
 }
 function viewMarket(){
   const q=S.mkQ.trim();
-  const list=S.ads.filter(a=>adLive(a)&&(S.mkKind==='الكل'||a.kind===S.mkKind)&&(S.mkAnimal==='الكل'||a.animal===S.mkAnimal)&&(S.mkOrigin==='الكل'||a.origin===S.mkOrigin)&&(!q||[a.breed,a.city,a.animal,a.type,a.note].join(' ').includes(q)));
+  const list=S.ads.filter(a=>adLive(a)&&(S.mkKind==='الكل'||(S.mkKind==='شراء'?a.kind!=='بيع':a.kind===S.mkKind))&&(S.mkBreed==='الكل'||sameBreed(a.breed,S.mkBreed))&&(S.mkAnimal==='الكل'||a.animal===S.mkAnimal)&&(S.mkOrigin==='الكل'||a.origin===S.mkOrigin)&&(!q||[a.breed,a.city,a.animal,a.type,a.note].join(' ').includes(q)));
   return `<div class="top dark"><h1 style="margin:0;font-size:28px">سوق الحلال</h1><div style="color:#D9CDB6;margin-top:4px">بيع وشراء الغنم والماعز — محلي ومستورد</div>
   <label class="search">${ic(I.search,'#6B5A45',20)}<span class="sr">بحث في السوق</span><input id="mkq" type="search" placeholder="ابحث بالصنف أو المدينة" value="${esc(S.mkQ)}"></label></div>
   <main><a class="btn btn-gold" href="#newad">${ic(I.plus,'#4A2E1A',20,2.2)}أضف إعلان</a>
-  ${chipRow('mkKind',['بيع','مطلوب'])}${chipRow('mkAnimal',ANIMALS)}${chipRow('mkOrigin',ORIGINS)}
+  ${chipRow('mkKind',['بيع','شراء'])}${chipRow('mkAnimal',ANIMALS)}${chipRow('mkOrigin',ORIGINS)}<div style="overflow-x:auto">${chipRow('mkBreed',adBreeds(S.mkAnimal,S.mkOrigin))}</div>
   ${list.length?list.map(adCard).join(''):'<div class="empty">ما فيه إعلانات بهذا البحث</div>'}
   ${S.user?`<a class="link" href="#myads" style="text-align:center">إعلاناتي</a>`:''}
   <div class="muted" style="font-size:13px">الإعلان بـ${adPrice()} ريال ويبقى ${AD_DAYS} يوم، وتجدده من «إعلاناتي».</div></main>`;
@@ -332,15 +337,14 @@ function viewNewAd(){
   const an=S.adAnimal||'غنم';
   return `<main><div class="head">${backBtn()}<h1>إعلان جديد</h1></div>
   <form id="adForm" style="display:flex;flex-direction:column;gap:14px">
-  <div class="grid2"><label class="f">نوع الإعلان<select name="kind"><option>بيع</option><option>مطلوب</option></select></label>
+  <div class="grid2"><label class="f">نوع الإعلان<select name="kind"><option>بيع</option><option>شراء</option></select></label>
   <label class="f">الحلال<select name="animal" id="adAnimal">${opts(ANIMALS,an)}</select></label>
-  <label class="f">محلي / مستورد<select name="origin">${opts(ORIGINS)}</select></label>
-  <label class="f">الصنف<input name="breed" list="breedList" placeholder="اختر أو اكتب"></label>
+  <label class="f">محلي / مستورد<select name="origin" id="adOrigin">${opts(ORIGINS,S.adOrigin||'محلي')}</select></label>
+  <label class="f">الصنف<select name="breed" id="adBreed" required>${opts(adBreeds(an,S.adOrigin||'محلي'))}</select></label>
   <label class="f">النوع<select name="type">${opts(AD_TYPES)}</select></label>
   <label class="f">العمر (اختياري)<select name="age"><option value="">—</option>${opts(AGES)}</select></label>
   <label class="f">العدد<input name="count" type="number" min="1" inputmode="numeric" required placeholder="مثال: 10"></label>
   <label class="f">السعر / الميزانية<input name="price" type="number" min="0" inputmode="numeric" placeholder="فاضي = على السوم"></label></div>
-  <datalist id="breedList">${AD_BREEDS[an].map(b=>`<option value="${b}">`).join('')}</datalist>
   <div class="grid2"><label class="f">المدينة<input name="city" required placeholder="مثال: بريدة"></label>
   <label class="f">جوالك (واتساب)<input name="phone" required inputmode="tel" placeholder="05xxxxxxxx" value="${esc(S.myMarah?S.myMarah.phone:'')}"></label></div>
   <label class="f">صورة (اختياري)<input name="photo" type="file" accept="image/*" style="padding-top:10px"></label>
@@ -353,7 +357,7 @@ function viewPayAd(id){
   if(!S.user||!a||a.uid!==S.user.uid)return `<main><div class="head">${backBtn()}<h1>دفع الإعلان</h1></div><div class="empty">${S.user?'الإعلان غير موجود':'سجّل دخولك أول'}</div></main>`;
   const b=bank();
   return `<main><div class="head">${backBtn()}<h1>دفع الإعلان</h1></div>
-  <div class="price-card"><div style="color:#D9CDB6">${a.kind==='بيع'?'للبيع':'مطلوب'}: ${esc(a.count)} ${esc(a.animal)} ${esc(a.breed||'')} — ${esc(a.city)}</div><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:56px;font-weight:800;line-height:1;color:var(--gold)">${adPrice()}</span><span style="font-size:18px">ريال / ${AD_DAYS} يوم</span></div></div>
+  <div class="price-card"><div style="color:#D9CDB6">${a.kind==='بيع'?'للبيع':'للشراء'}: ${esc(a.count)} ${esc(a.animal)} ${esc(a.breed||'')} — ${esc(a.city)}</div><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:56px;font-weight:800;line-height:1;color:var(--gold)">${adPrice()}</span><span style="font-size:18px">ريال / ${AD_DAYS} يوم</span></div></div>
   <div class="card"><b>الدفع بتحويل بنكي</b>
   <div class="row muted"><span>البنك</span><b style="color:var(--ink)">${esc(b.name)}</b></div>
   <div class="row muted"><span>صاحب الحساب</span><b style="color:var(--ink)">${esc(b.holder)}</b></div>
@@ -461,11 +465,13 @@ function bind(){
     try{let photo='';const file=f.get('photo');if(file&&file.size)photo=await compress(file,700,.55);
       await db.collection('items').add({marahId:S.user.uid,breed:seg.querySelector('.on').dataset.v,type:f.get('type'),age:f.get('age'),count:f.get('count')?Number(f.get('count')):null,price:f.get('price')?Number(f.get('price')):null,note:(f.get('note')||'').trim(),photo,status:'متوفر',createdAt:now()});
       toast('انضاف الحلال لمراحك');go('marah-'+S.user.uid)}catch(err){toast('صار خطأ: '+(err.code||err.message));btn.disabled=false;btn.textContent='نشر في مراحي'}};
-  document.querySelectorAll('.chip.mk').forEach(b=>b.onclick=()=>{S[b.dataset.k]=b.dataset.v;document.getElementById('view')._h=null;render()});
+  document.querySelectorAll('.chip.mk').forEach(b=>b.onclick=()=>{S[b.dataset.k]=b.dataset.v;if(b.dataset.k!=='mkBreed'&&b.dataset.k!=='mkKind')S.mkBreed='الكل';document.getElementById('view')._h=null;render()});
   const mq=document.getElementById('mkq');
   if(mq)mq.addEventListener('input',e=>{S.mkQ=e.target.value;const p=e.target.selectionStart;document.getElementById('view')._h=null;render();const n=document.getElementById('mkq');n.focus();n.setSelectionRange(p,p)});
   const aa=document.getElementById('adAnimal');
-  if(aa)aa.onchange=()=>{S.adAnimal=aa.value;document.getElementById('breedList').innerHTML=AD_BREEDS[aa.value].map(b=>`<option value="${b}">`).join('')};
+  const ao=document.getElementById('adOrigin');
+  const fillBreeds=()=>{const ab=document.getElementById('adBreed');ab.innerHTML=opts(adBreeds(aa.value,ao.value))};
+  if(aa){aa.onchange=()=>{S.adAnimal=aa.value;fillBreeds()};ao.onchange=()=>{S.adOrigin=ao.value;fillBreeds()}}
   const adf=document.getElementById('adForm');
   if(adf)adf.onsubmit=async e=>{e.preventDefault();const f=new FormData(adf);const btn=adf.querySelector('button:not([type])');btn.disabled=true;btn.textContent='جاري النشر…';
     try{let photo='';const file=f.get('photo');if(file&&file.size)photo=await compress(file,700,.55);
@@ -479,7 +485,7 @@ function bind(){
     try{await db.collection('settings').doc('app').set({price:Number(f.get('price'))||99,adPrice:Number(f.get('adPrice'))||33,bankName:f.get('bankName').trim(),holder:f.get('holder').trim(),iban:f.get('iban').trim()},{merge:true});toast('انحفظت الإعدادات')}catch(err){toast('صار خطأ: '+(err.code||err.message))}btn.disabled=false};
   const ar=document.getElementById('adReceipt');
   if(ar)ar.onchange=async()=>{if(!ar.files.length)return;toast('جاري رفع الإيصال…');const id=ar.dataset.ad;const a=S.ads.find(x=>x.id===id);
-    try{const image=await compress(ar.files[0],1200,.6);await db.collection('receipts').add({uid:S.user.uid,adId:id,kindOf:'ad',marahName:'إعلان: '+(a.kind==='بيع'?'للبيع ':'مطلوب ')+a.count+' '+a.animal+' '+(a.breed||'')+' — '+a.city,image,status:'new',createdAt:now()});
+    try{const image=await compress(ar.files[0],1200,.6);await db.collection('receipts').add({uid:S.user.uid,adId:id,kindOf:'ad',marahName:'إعلان: '+(a.kind==='بيع'?'للبيع ':'للشراء ')+a.count+' '+a.animal+' '+(a.breed||'')+' — '+a.city,image,status:'new',createdAt:now()});
       await db.collection('ads').doc(id).update({receiptSent:true});toast('استلمنا الإيصال — ينشر الإعلان بعد المراجعة')}catch(err){toast('صار خطأ: '+(err.code||err.message))}};
   const rc=document.getElementById('receipt');
   if(rc)rc.onchange=async()=>{if(!rc.files.length)return;toast('جاري رفع الإيصال…');
