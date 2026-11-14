@@ -16,13 +16,13 @@ body{margin:0;background:#E9E0CC;font-family:'Almarai',system-ui,sans-serif;font
 h1,h2{font-weight:800;line-height:1.3}
 button,input,select,textarea{font:inherit}
 .top{background:var(--paper);border-bottom:1px solid var(--line);padding:16px 18px 18px}
-.top.dark{background:var(--ink);color:var(--sand);border:0}
+.top.dark{background:var(--teal);color:#fff;border:0}
 .logo{display:block;width:130px;height:auto;margin:0 auto}
 .search{margin-top:12px;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 14px;height:48px}
 .search input{flex:1;border:0;background:transparent;font-size:15px;color:var(--ink);outline:none;min-width:0}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:14px 18px 0;scrollbar-width:none}
 .chip{flex:none;height:38px;padding:0 16px;border-radius:999px;border:1px solid #B8A88E;background:transparent;color:var(--ink);font-size:14px;cursor:pointer}
-.chip.on{background:var(--ink);color:var(--sand);border-color:var(--ink)}
+.chip.on{background:var(--teal);color:#fff;border-color:var(--teal)}
 main{flex:1;padding:18px 18px 100px;display:flex;flex-direction:column;gap:14px}
 .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
@@ -37,7 +37,7 @@ main{flex:1;padding:18px 18px 100px;display:flex;flex-direction:column;gap:14px}
 .stats b{font-size:15px}
 .btn{min-height:46px;border-radius:12px;border:0;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;width:100%;padding:0 12px}
 .btn:disabled{opacity:.5;cursor:default}
-.btn-dark{background:var(--ink);color:var(--sand)}
+.btn-dark{background:var(--teal);color:#fff}
 .btn-line{background:transparent;border:1.5px solid var(--ink);color:var(--ink)}
 .btn-gold{background:var(--gold);color:var(--ink);font-weight:800;min-height:52px;font-size:16px}
 .btn-reg{background:#E9DCC2;color:var(--ink);border:2px solid var(--teal);min-height:52px;font-size:16px;font-weight:800}
@@ -48,13 +48,13 @@ label.f{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:70
 .f input,.f select,.f textarea{height:48px;border-radius:12px;border:1px solid #D9CDB6;background:#fff;padding:0 12px;font-size:15px;font-weight:400;color:var(--ink);width:100%}
 .f textarea{height:auto;padding:10px 12px;resize:vertical}
 .back{width:44px;height:44px;flex:none;border-radius:12px;border:1px solid #D9CDB6;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.dark .back{border-color:#7A5A40}
+.dark .back{border-color:rgba(255,255,255,.45)}
 .head{display:flex;align-items:center;gap:12px}
 .head h1{margin:0;font-size:24px}
 .item{background:#fff;border:1px solid #E6D3AE;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
 .item img,.photo{width:100%;max-height:240px;object-fit:cover;border-radius:10px;display:block}
 .rank{width:40px;height:40px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800}
-.price-card{background:var(--ink);color:var(--sand);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:12px}
+.price-card{background:var(--teal);color:#fff;border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:12px}
 .check{display:flex;align-items:center;gap:10px;font-size:15px}
 nav.tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:6px 4px calc(10px + env(safe-area-inset-bottom));z-index:5}
 nav.tabs a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;text-decoration:none;color:var(--muted);font-size:12px}
@@ -110,7 +110,7 @@ const money=p=>p?`${Number(p).toLocaleString('ar-SA')} ر.س`:'على السوم
 function waNum(p){let d=String(p||'').replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);if(d.startsWith('05'))d='966'+d.slice(1);else if(d.startsWith('5')&&d.length===9)d='966'+d;return d}
 function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2600)}
 function go(h){location.hash=h}
-function backBtn(dark){return `<button class="back" aria-label="رجوع" onclick="history.length>1?history.back():go('home')">${ic(I.back,dark?'#F5EEDF':'#4A2E1A',20,2)}</button>`}
+function backBtn(dark){return `<button class="back" aria-label="رجوع" onclick="history.length>1?history.back():go('home')">${ic(I.back,dark?'#FFFFFF':'#4A2E1A',20,2)}</button>`}
 function compress(file,max=900,q=.62){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;const s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);let out=c.toDataURL('image/jpeg',q);if(out.length>700000)out=c.toDataURL('image/jpeg',.4);res(out)};img.onerror=rej;img.src=r.result};r.onerror=rej;r.readAsDataURL(file)})}
 
 /* ===================== Firebase ===================== */
@@ -191,7 +191,7 @@ function viewHome(){
   <label class="search">${ic(I.search,'#6B5A45',20)}<span class="sr">بحث</span><input id="q" type="search" placeholder="ابحث عن مراح أو صنف أو منطقة" value="${esc(S.q)}"></label></div>
   <div class="chips">${['الكل',...BREEDS].map(b=>`<button class="chip ${S.filter===b?'on':''}" data-b="${b}">${b}</button>`).join('')}</div>
   <main><div class="grid2">
-  <a href="#marahs" class="card" style="text-decoration:none;color:inherit;align-items:center;text-align:center;gap:6px;background:var(--ink);border:0">${ic(I.marah,'#E8C77E',30)}<b style="color:var(--sand);font-size:16px">الصنف والمزاين</b><span style="color:#D9CDB6;font-size:12px">المرحان الموثّقة</span></a>
+  <a href="#marahs" class="card" style="text-decoration:none;color:inherit;align-items:center;text-align:center;gap:6px;background:var(--teal);border:0">${ic(I.marah,'#FFFFFF',30)}<b style="color:#fff;font-size:16px">الصنف والمزاين</b><span style="color:#E3F4F2;font-size:12px">المرحان الموثّقة</span></a>
   <a href="#market" class="card" style="text-decoration:none;color:inherit;align-items:center;text-align:center;gap:6px;background:#E9DCC2;border:2px solid var(--teal)">${ic(I.store,'#4A2E1A',30)}<b style="font-size:16px">سوق الحلال</b><span class="muted" style="font-size:12px">بيع وشراء — غنم وماعز</span></a></div>
   <div class="row"><h2 class="title" style="font-size:22px">المرحان</h2><a class="link" href="#marahs">عرض الكل</a></div>
   ${!S.loaded?'<div class="empty">جاري التحميل…</div>':list.length?list.map(marahCard).join(''):'<div class="empty">ما فيه مرحان بهذا البحث حالياً</div>'}
@@ -218,8 +218,8 @@ function viewMarah(id){
   const mine=S.user&&S.user.uid===m.id;
   return `<div class="top dark" style="display:flex;flex-direction:column;gap:12px">${backBtn(true)}
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1 style="margin:0;font-size:28px">${esc(m.name)}</h1>${verifiedBadge(m)}</div>
-  <div style="color:#D9CDB6">المالك: ${esc(m.ownerName)}</div>
-  <div style="display:flex;align-items:center;gap:6px;color:#D9CDB6;font-size:14px">${ic(I.pin,'#B8862E',16)}${esc(m.region||'—')}${m.mapUrl?` — <a href="${esc(m.mapUrl)}" target="_blank" rel="noopener" style="color:#E8C77E">افتح الموقع</a>`:''}</div></div>
+  <div style="color:#E3F4F2">المالك: ${esc(m.ownerName)}</div>
+  <div style="display:flex;align-items:center;gap:6px;color:#E3F4F2;font-size:14px">${ic(I.pin,'#FFE7A8',16)}${esc(m.region||'—')}${m.mapUrl?` — <a href="${esc(m.mapUrl)}" target="_blank" rel="noopener" style="color:#FFE7A8">افتح الموقع</a>`:''}</div></div>
   <main>
   <div class="stats"><div style="text-align:center"><b>${total||'—'}</b><small>رأس متوفر</small></div><div style="text-align:center"><b>${breeds}</b><small>أصناف</small></div><div style="text-align:center"><b>${m.awards||0}</b><small>جوائز مزاين</small></div></div>
   ${m.lat&&m.lng?`<div class="card" style="padding:0;overflow:hidden"><iframe title="موقع المراح" src="https://maps.google.com/maps?q=${Number(m.lat)},${Number(m.lng)}&z=13&output=embed" style="width:100%;height:220px;border:0;display:block" loading="lazy"></iframe><a class="btn btn-line" style="border:0;border-top:1px solid var(--line);border-radius:0" href="${esc(m.mapUrl||`https://www.google.com/maps?q=${m.lat},${m.lng}`)}" target="_blank" rel="noopener">${ic(I.pin,'#4A2E1A',18)}افتح في خرائط Google</a></div>`:m.mapUrl?`<a class="btn btn-line" href="${esc(m.mapUrl)}" target="_blank" rel="noopener">${ic(I.pin,'#4A2E1A',18)}موقع المراح على خرائط Google</a>`:''}
@@ -283,7 +283,7 @@ function viewSubscribe(){
   const c=d=>`<div class="check">${ic(I.check,'#2F5D3A',20,2.2)}${d}</div>`;
   const can=S.user&&S.myMarah;
   return `<main><div class="head">${backBtn()}<h1>اشتراك المرحان</h1></div>
-  <div class="price-card"><div style="color:#D9CDB6">الاشتراك الشهري لمالك المراح</div><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:64px;font-weight:800;line-height:1;color:var(--gold)">${price()}</span><span style="font-size:18px">ريال / شهرياً</span></div><div style="color:#D9CDB6;font-size:14px">يتجدد كل شهر بعد تأكيد التحويل.</div></div>
+  <div class="price-card"><div style="color:#E3F4F2">الاشتراك الشهري لمالك المراح</div><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:64px;font-weight:800;line-height:1;color:#FFE7A8">${price()}</span><span style="font-size:18px">ريال / شهرياً</span></div><div style="color:#E3F4F2;font-size:14px">يتجدد كل شهر بعد تأكيد التحويل.</div></div>
   <div class="card"><b>وش يشمل الاشتراك</b>${c('صفحة خاصة لمراحك بموقعه')}${c('إضافة أصنافك وأعدادها وأسعارها')}${c('الظهور في البحث وتصنيف المرحان')}${c('الرد على طلبات المشترين')}${c('المشاركة في المزاين')}</div>
   <div class="card"><b>الدفع بتحويل بنكي</b>
   <div class="row muted"><span>البنك</span><b style="color:var(--ink)">${esc(bank().name)}</b></div>
@@ -296,9 +296,9 @@ function viewSubscribe(){
 function viewMazayen(){
   const ranked=[...S.marahs].sort((a,b)=>(b.awards||0)-(a.awards||0)).slice(0,10);
   const col=['#B8862E','#D9CDB6','#E8D5B5'];
-  return `<div class="top dark"><h1 style="margin:0;font-size:28px">المزاين</h1><div style="color:#D9CDB6;margin-top:4px">مسابقات جمال الحلال وترتيب المرحان</div></div>
-  <main><div class="card" style="background:var(--ink);color:var(--sand);border:0"><span class="badge" style="align-self:flex-start;background:var(--gold);color:var(--ink)">المزاين القادمة</span>
-  <h2 class="title">يُعلن عنها قريباً</h2><div style="color:#D9CDB6;font-size:14px">تابعنا، وأول ما تنعلن المزاين تقدر تسجّل حلالك من هنا.</div></div>
+  return `<div class="top dark"><h1 style="margin:0;font-size:28px">المزاين</h1><div style="color:#E3F4F2;margin-top:4px">مسابقات جمال الحلال وترتيب المرحان</div></div>
+  <main><div class="card" style="background:var(--teal);color:#fff;border:0"><span class="badge" style="align-self:flex-start;background:var(--gold);color:var(--ink)">المزاين القادمة</span>
+  <h2 class="title">يُعلن عنها قريباً</h2><div style="color:#E3F4F2;font-size:14px">تابعنا، وأول ما تنعلن المزاين تقدر تسجّل حلالك من هنا.</div></div>
   <h2 class="title">ترتيب المرحان</h2>
   ${ranked.length?ranked.map((m,i)=>`<a href="#marah-${m.id}" class="item" style="flex-direction:row;align-items:center;gap:12px;text-decoration:none;color:inherit"><span class="rank" style="background:${col[i]||'#F5EEDF'}">${i+1}</span><div style="flex:1"><b>${esc(m.name)}</b><div class="muted" style="font-size:13px">${esc(m.region||'')}</div></div><b>${m.awards||0} نقطة</b></a>`).join(''):'<div class="empty">الترتيب يبدأ بعد أول مزاين</div>'}
   <div class="muted" style="font-size:13px">كل فوز في المزاين يضيف نقاط للمراح ويرفع ترتيبه.</div></main>`;
@@ -316,14 +316,19 @@ function adCard(a){
   ${n&&!mine?`<div class="grid2"><a class="btn btn-line" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent('السلام عليكم، بخصوص إعلانك في مزاين الحلال: '+(sell?'للبيع':'للشراء')+' '+a.count+' '+a.animal+' '+(a.breed||''))}">${ic(I.wa,'#4A2E1A',18)}واتساب</a><a class="btn btn-line" href="tel:+${n}">${ic(I.phone,'#4A2E1A',18)}اتصال</a></div>`:''}
   ${mine||S.isAdmin?`<div class="seg">${mine&&!adLive(a)?`<a class="btn btn-reg btn-sm" href="#payad-${a.id}">${a.status==='pending'?'ادفع '+adPrice()+' ريال وارفع الإيصال':'تجديد — '+adPrice()+' ريال'}</a>`:''}<button class="btn btn-red btn-sm" onclick="delAd('${a.id}')">حذف</button><span class="muted" style="align-self:center;font-size:12px">${adLive(a)?'باقي '+left+' يوم':a.status==='pending'?(a.receiptSent?'بانتظار المراجعة':'بانتظار الدفع'):'منتهي'}</span></div>`:''}</div>`;
 }
+function breedGroup(title,list){return `<div style="display:flex;flex-direction:column;gap:8px"><span class="muted" style="font-size:13px;font-weight:700">${title}</span><div class="seg">${list.map(b=>`<button class="chip mkb ${S.mkBreed===b?'on':''}" data-v="${b}">${b}</button>`).join('')}</div></div>`}
 function viewMarket(){
   const q=S.mkQ.trim();
-  const list=S.ads.filter(a=>adLive(a)&&(S.mkKind==='الكل'||(S.mkKind==='شراء'?a.kind!=='بيع':a.kind===S.mkKind))&&(S.mkBreed==='الكل'||sameBreed(a.breed,S.mkBreed))&&(S.mkAnimal==='الكل'||a.animal===S.mkAnimal)&&(S.mkOrigin==='الكل'||a.origin===S.mkOrigin)&&(!q||[a.breed,a.city,a.animal,a.type,a.note].join(' ').includes(q)));
-  return `<div class="top dark"><h1 style="margin:0;font-size:28px">سوق الحلال</h1><div style="color:#D9CDB6;margin-top:4px">بيع وشراء الغنم والماعز — محلي ومستورد</div>
+  const list=S.ads.filter(a=>adLive(a)&&(S.mkBreed==='الكل'||sameBreed(a.breed,S.mkBreed))&&(!q||[a.breed,a.city,a.animal,a.type,a.note,a.origin].join(' ').includes(q)));
+  return `<div class="top dark"><h1 style="margin:0;font-size:28px">سوق الحلال</h1><div style="color:#E3F4F2;margin-top:4px">بيع وشراء الأغنام والماعز — محلي ومستورد</div>
   <label class="search">${ic(I.search,'#6B5A45',20)}<span class="sr">بحث في السوق</span><input id="mkq" type="search" placeholder="ابحث بالصنف أو المدينة" value="${esc(S.mkQ)}"></label></div>
-  <main><a class="btn btn-gold" href="#newad">${ic(I.plus,'#4A2E1A',20,2.2)}أضف إعلان</a>
-  ${chipRow('mkKind',['بيع','شراء'])}${chipRow('mkAnimal',ANIMALS)}${chipRow('mkOrigin',ORIGINS)}<div style="overflow-x:auto">${chipRow('mkBreed',adBreeds(S.mkAnimal,S.mkOrigin))}</div>
+  <main>
+  <div class="card"><div class="row"><h2 class="title">المحلي</h2>${S.mkBreed!=='الكل'?`<button class="link mkb" data-v="الكل" style="background:none;border:0;cursor:pointer">عرض الكل</button>`:''}</div>
+  ${breedGroup('الضأن',LOCAL_SHEEP)}${breedGroup('الماعز',LOCAL_GOATS)}</div>
+  <div class="card"><h2 class="title">المستورد</h2>${breedGroup('',IMPORTED)}</div>
+  ${S.mkBreed!=='الكل'?`<h2 class="title">إعلانات ${esc(S.mkBreed)}</h2>`:'<h2 class="title">أحدث الإعلانات</h2>'}
   ${list.length?list.map(adCard).join(''):'<div class="empty">ما فيه إعلانات بهذا البحث</div>'}
+  <a class="btn btn-gold" href="#newad">${ic(I.plus,'#4A2E1A',20,2.2)}أضف إعلانك</a>
   ${S.user?`<a class="link" href="#myads" style="text-align:center">إعلاناتي</a>`:''}
   <div class="muted" style="font-size:13px">الإعلان بـ${adPrice()} ريال ويبقى ${AD_DAYS} يوم، وتجدده من «إعلاناتي».</div></main>`;
 }
@@ -357,7 +362,7 @@ function viewPayAd(id){
   if(!S.user||!a||a.uid!==S.user.uid)return `<main><div class="head">${backBtn()}<h1>دفع الإعلان</h1></div><div class="empty">${S.user?'الإعلان غير موجود':'سجّل دخولك أول'}</div></main>`;
   const b=bank();
   return `<main><div class="head">${backBtn()}<h1>دفع الإعلان</h1></div>
-  <div class="price-card"><div style="color:#D9CDB6">${a.kind==='بيع'?'للبيع':'للشراء'}: ${esc(a.count)} ${esc(a.animal)} ${esc(a.breed||'')} — ${esc(a.city)}</div><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:56px;font-weight:800;line-height:1;color:var(--gold)">${adPrice()}</span><span style="font-size:18px">ريال / ${AD_DAYS} يوم</span></div></div>
+  <div class="price-card"><div style="color:#E3F4F2">${a.kind==='بيع'?'للبيع':'للشراء'}: ${esc(a.count)} ${esc(a.animal)} ${esc(a.breed||'')} — ${esc(a.city)}</div><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:56px;font-weight:800;line-height:1;color:#FFE7A8">${adPrice()}</span><span style="font-size:18px">ريال / ${AD_DAYS} يوم</span></div></div>
   <div class="card"><b>الدفع بتحويل بنكي</b>
   <div class="row muted"><span>البنك</span><b style="color:var(--ink)">${esc(b.name)}</b></div>
   <div class="row muted"><span>صاحب الحساب</span><b style="color:var(--ink)">${esc(b.holder)}</b></div>
@@ -374,7 +379,7 @@ function viewRequests(){
   <label class="f">العدد<input name="count" type="number" min="1" inputmode="numeric" placeholder="مثال: 20" required></label><label class="f">المدينة<input name="city" placeholder="مثال: الرياض" required></label></div>
   <label class="f">جوالك للتواصل<input name="phone" inputmode="tel" placeholder="05xxxxxxxx" required></label>
   <button class="btn btn-gold">نشر الطلب</button></form>`:`<div class="card"><b>تبغى تشتري؟</b><div class="muted">سجّل دخولك وانشر طلبك، والمرحان تتواصل معك.</div><button class="btn btn-dark" onclick="signIn()">الدخول بحساب Google</button></div>`;
-  return `<div class="top dark"><h1 style="margin:0;font-size:28px">طلبات الشراء</h1><div style="color:#D9CDB6;margin-top:4px">المشتري يطلب، والمرحان ترد</div></div>
+  return `<div class="top dark"><h1 style="margin:0;font-size:28px">طلبات الشراء</h1><div style="color:#E3F4F2;margin-top:4px">المشتري يطلب، والمرحان ترد</div></div>
   <main>${form}
   ${S.requests.length?S.requests.map(r=>{const mine=S.user&&S.user.uid===r.uid;const n=waNum(r.phone);return `<div class="item"><div class="row"><b style="font-size:17px">مطلوب ${esc(r.count)} رأس ${esc(r.breed)}</b><span class="muted" style="font-size:12px">${r.createdAt?new Date(r.createdAt).toLocaleDateString('ar-SA'):''}</span></div>
   <div class="seg" style="font-size:13px"><span class="badge off">${esc(r.city)}</span><span class="badge off">${esc(r.type)}</span></div>
@@ -465,6 +470,7 @@ function bind(){
     try{let photo='';const file=f.get('photo');if(file&&file.size)photo=await compress(file,700,.55);
       await db.collection('items').add({marahId:S.user.uid,breed:seg.querySelector('.on').dataset.v,type:f.get('type'),age:f.get('age'),count:f.get('count')?Number(f.get('count')):null,price:f.get('price')?Number(f.get('price')):null,note:(f.get('note')||'').trim(),photo,status:'متوفر',createdAt:now()});
       toast('انضاف الحلال لمراحك');go('marah-'+S.user.uid)}catch(err){toast('صار خطأ: '+(err.code||err.message));btn.disabled=false;btn.textContent='نشر في مراحي'}};
+  document.querySelectorAll('.mkb').forEach(b=>b.onclick=()=>{S.mkBreed=(S.mkBreed===b.dataset.v?'الكل':b.dataset.v);document.getElementById('view')._h=null;render()});
   document.querySelectorAll('.chip.mk').forEach(b=>b.onclick=()=>{S[b.dataset.k]=b.dataset.v;if(b.dataset.k!=='mkBreed'&&b.dataset.k!=='mkKind')S.mkBreed='الكل';document.getElementById('view')._h=null;render()});
   const mq=document.getElementById('mkq');
   if(mq)mq.addEventListener('input',e=>{S.mkQ=e.target.value;const p=e.target.selectionStart;document.getElementById('view')._h=null;render();const n=document.getElementById('mkq');n.focus();n.setSelectionRange(p,p)});
