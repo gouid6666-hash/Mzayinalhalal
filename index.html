@@ -207,6 +207,7 @@ function viewMarah(id){
   <div style="display:flex;align-items:center;gap:6px;color:#D9CDB6;font-size:14px">${ic(I.pin,'#B8862E',16)}${esc(m.region||'—')}${m.mapUrl?` — <a href="${esc(m.mapUrl)}" target="_blank" rel="noopener" style="color:#E8C77E">افتح الموقع</a>`:''}</div></div>
   <main>
   <div class="stats"><div style="text-align:center"><b>${total||'—'}</b><small>رأس متوفر</small></div><div style="text-align:center"><b>${breeds}</b><small>أصناف</small></div><div style="text-align:center"><b>${m.awards||0}</b><small>جوائز مزاين</small></div></div>
+  ${m.lat&&m.lng?`<div class="card" style="padding:0;overflow:hidden"><iframe title="موقع المراح" src="https://maps.google.com/maps?q=${Number(m.lat)},${Number(m.lng)}&z=13&output=embed" style="width:100%;height:220px;border:0;display:block" loading="lazy"></iframe><a class="btn btn-line" style="border:0;border-top:1px solid var(--line);border-radius:0" href="${esc(m.mapUrl||`https://www.google.com/maps?q=${m.lat},${m.lng}`)}" target="_blank" rel="noopener">${ic(I.pin,'#4A2E1A',18)}افتح في خرائط Google</a></div>`:m.mapUrl?`<a class="btn btn-line" href="${esc(m.mapUrl)}" target="_blank" rel="noopener">${ic(I.pin,'#4A2E1A',18)}موقع المراح على خرائط Google</a>`:''}
   <div class="row"><h2 class="title">الحلال المعروض</h2>${mine?'<a class="link" href="#add">+ إضافة حلال</a>':''}</div>
   ${its.length?its.map(i=>itemBlock(i,mine)).join(''):'<div class="empty">ما فيه حلال معروض للحين</div>'}
   ${contactBtns(m)}</main>`;
@@ -218,7 +219,13 @@ function marahForm(m){
   <label class="f">اسم المالك<input name="ownerName" required placeholder="الاسم كامل" value="${esc(m.ownerName)}"></label>
   <label class="f">المنطقة / المدينة<input name="region" required placeholder="مثال: الرياض — العمارية" value="${esc(m.region)}"></label>
   <label class="f">رقم الجوال (واتساب)<input name="phone" required inputmode="tel" placeholder="05xxxxxxxx" value="${esc(m.phone)}"></label>
-  <label class="f">رابط الموقع على الخريطة (اختياري)<input name="mapUrl" type="url" placeholder="الصق رابط قوقل ماب" value="${esc(m.mapUrl)}"></label>
+  <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:14px;font-weight:700">موقع المراح على الخريطة</span>
+  <button type="button" class="btn btn-line" id="locBtn">${ic(I.pin,'#4A2E1A',18)}حدّد موقعي الحالي</button>
+  <a class="btn btn-line" href="https://www.google.com/maps" target="_blank" rel="noopener">${ic(I.search,'#4A2E1A',18)}اختر الموقع من خرائط Google</a>
+  <div class="muted" style="font-size:12px;line-height:1.7">إذا كنت في المراح اضغط «حدّد موقعي». أو افتح خرائط Google، اضغط مطوّلاً على مكان المراح، ثم «مشاركة» ← «نسخ الرابط»، والصقه هنا.</div>
+  <input name="mapUrl" type="url" dir="ltr" placeholder="رابط خرائط Google" value="${esc(m.mapUrl)}" style="height:48px;border-radius:12px;border:1px solid #D9CDB6;background:#fff;padding:0 12px;font-size:14px;color:var(--ink);width:100%">
+  <input type="hidden" name="lat" value="${esc(m.lat??'')}"><input type="hidden" name="lng" value="${esc(m.lng??'')}">
+  <div id="locMsg" class="muted" style="font-size:13px">${m.lat?'تم تحديد الموقع ✓':''}</div></div>
   <button class="btn btn-dark">${m.name?'حفظ التعديل':'تسجيل المراح'}</button></form>`;
 }
 function viewAccount(){
@@ -354,9 +361,17 @@ function bind(){
   document.querySelectorAll('.chips .chip').forEach(b=>b.onclick=()=>{S.filter=b.dataset.b;document.getElementById('view')._h=null;render()});
   const seg=document.getElementById('breedSeg');
   if(seg)seg.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{seg.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on')});
+  const lb=document.getElementById('locBtn');
+  if(lb)lb.onclick=()=>{const fm=lb.closest('form');const msg=fm.querySelector('#locMsg');
+    if(!navigator.geolocation){msg.textContent='جهازك ما يدعم تحديد الموقع';return}
+    msg.textContent='جاري تحديد الموقع…';
+    navigator.geolocation.getCurrentPosition(p=>{const la=p.coords.latitude.toFixed(6),ln=p.coords.longitude.toFixed(6);
+      fm.lat.value=la;fm.lng.value=ln;fm.mapUrl.value=`https://www.google.com/maps?q=${la},${ln}`;msg.textContent='تم تحديد الموقع ✓ — لا تنسى تحفظ';},
+      e=>{msg.textContent=e.code===1?'رفضت إذن الموقع. فعّله من إعدادات المتصفح وجرّب مرة ثانية':'تعذّر تحديد الموقع، جرّب مرة ثانية'},{enableHighAccuracy:true,timeout:15000})};
   const mf=document.getElementById('marahForm');
   if(mf)mf.onsubmit=async e=>{e.preventDefault();const f=new FormData(mf);const btn=mf.querySelector('button');btn.disabled=true;
-    const data={name:f.get('name').trim(),ownerName:f.get('ownerName').trim(),region:f.get('region').trim(),phone:f.get('phone').trim(),mapUrl:(f.get('mapUrl')||'').trim()};
+    const data={name:f.get('name').trim(),ownerName:f.get('ownerName').trim(),region:f.get('region').trim(),phone:f.get('phone').trim(),mapUrl:(f.get('mapUrl')||'').trim(),lat:f.get('lat')?Number(f.get('lat')):null,lng:f.get('lng')?Number(f.get('lng')):null};
+    if(data.mapUrl&&!/^https:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.google\.[a-z.]+|maps\.app\.goo\.gl|goo\.gl\/maps)/.test(data.mapUrl)){toast('الرابط لازم يكون من خرائط Google');btn.disabled=false;return}
     try{const ref=db.collection('marahs').doc(S.user.uid);
       if(S.myMarah){await ref.update(data);toast('انحفظت التعديلات')}
       else{await ref.set({...data,active:false,verified:false,awards:0,activeUntil:0,createdAt:now()});toast('انسجل مراحك — الخطوة الجاية الاشتراك');go('subscribe')}
