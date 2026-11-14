@@ -103,6 +103,10 @@ const isPlaceholder=v=>!v||/اسم البنك|اسم صاحب|SA00 0000/.test(v)
 function bank(){const s=S.settings||{};return{name:s.bankName||(isPlaceholder(CFG_BANK.name)?'':CFG_BANK.name)||NOT_SET,holder:s.holder||(isPlaceholder(CFG_BANK.holder)?'':CFG_BANK.holder)||NOT_SET,iban:s.iban||(isPlaceholder(CFG_BANK.iban)?'':CFG_BANK.iban)||NOT_SET}}
 function adPrice(){return Number((S.settings&&S.settings.adPrice)||window.AD_PRICE||33)}
 function entryFee(){return Number((S.settings&&S.settings.entryFee)||window.ENTRY_FEE||200)}
+function sellerPct(){return Number((S.settings&&S.settings.sellerPct)||window.SELLER_PCT||0.5)}
+function sellerFee(a){return Math.ceil(Number(a.currentPrice)*sellerPct()/100)}
+const BASE=()=>location.origin+location.pathname;
+function shareBtn(text,hash,small){return `<button type="button" class="btn btn-line${small?' btn-sm':''}" onclick="shareIt(${esc(JSON.stringify(text))},'${hash}')">${ic('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>','#4A2E1A',18)}مشاركة</button>`}
 function price(){return Number((S.settings&&S.settings.price)||window.SUB_PRICE||99)}
 const ic=(d,c='#6B5A45',s=22,w=1.8)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const I={gavel:'<path d="m14 13-7.5 7.5a2.1 2.1 0 0 1-3-3L11 10"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/>',play:'<polygon points="6 4 20 12 6 20 6 4"/>',store:'<path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9h18"/><path d="M9 20v-6h6v6"/>',plus:'<path d="M12 5v14M5 12h14"/>',home:'<path d="M3 10.5 12 3l9 7.5V21H3z"/>',marah:'<path d="M3 21V9l9-5 9 5v12"/><path d="M3 15h18"/>',cup:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',list:'<path d="M9 5h11M9 12h11M9 19h11M4 5h.01M4 12h.01M4 19h.01"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',back:'<path d="m9 18 6-6-6-6"/>',check:'<path d="M20 6 9 17l-5-5"/>',pin:'<path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',wa:'<path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.5A8.4 8.4 0 1 1 21 11.5z"/>',phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>'};
@@ -231,7 +235,7 @@ function viewMarah(id){
   ${m.lat&&m.lng?`<div class="card" style="padding:0;overflow:hidden"><iframe title="موقع المراح" src="https://maps.google.com/maps?q=${Number(m.lat)},${Number(m.lng)}&z=13&output=embed" style="width:100%;height:220px;border:0;display:block" loading="lazy"></iframe><a class="btn btn-line" style="border:0;border-top:1px solid var(--line);border-radius:0" href="${esc(m.mapUrl||`https://www.google.com/maps?q=${m.lat},${m.lng}`)}" target="_blank" rel="noopener">${ic(I.pin,'#4A2E1A',18)}افتح في خرائط Google</a></div>`:m.mapUrl?`<a class="btn btn-line" href="${esc(m.mapUrl)}" target="_blank" rel="noopener">${ic(I.pin,'#4A2E1A',18)}موقع المراح على خرائط Google</a>`:''}
   <div class="row"><h2 class="title">الحلال المعروض</h2>${mine?'<a class="link" href="#add">+ إضافة حلال</a>':''}</div>
   ${its.length?its.map(i=>itemBlock(i,mine)).join(''):'<div class="empty">ما فيه حلال معروض للحين</div>'}
-  ${contactBtns(m)}</main>`;
+  ${contactBtns(m)}${shareBtn(m.name+' — '+(m.region||'')+' | مزاين الحلال','marah-'+m.id)}</main>`;
 }
 function marahForm(m){
   m=m||{};
@@ -251,7 +255,7 @@ function marahForm(m){
 }
 function viewAccount(){
   const top=`<div class="top" style="display:flex;align-items:center;gap:12px"><img src="logo.png" alt="" style="width:56px;height:auto"><h1 style="margin:0;font-size:24px">حسابي</h1></div>`;
-  if(!S.user)return top+`<main><div class="card"><b>الدخول بحساب Google</b><div class="muted">سجّل دخولك عشان تسجّل مراحك وتضيف حلالك، أو تنشر طلب شراء.</div><button class="btn btn-dark" onclick="signIn()">الدخول بحساب Google</button></div></main>`;
+  if(!S.user)return top+`<main><a class="link" href="#terms" style="text-align:center">الشروط والأحكام</a><div class="card"><b>الدخول بحساب Google</b><div class="muted">سجّل دخولك عشان تسجّل مراحك وتضيف حلالك، أو تنشر طلب شراء.</div><button class="btn btn-dark" onclick="signIn()">الدخول بحساب Google</button></div></main>`;
   const m=S.myMarah;
   let body='';
   if(!m){body=marahForm()+`<div class="notice">بعد التسجيل، اشترك بـ${price()} ريال شهرياً عشان يظهر مراحك في التطبيق وتقدر تضيف حلالك.</div>`}
@@ -270,6 +274,7 @@ function viewAccount(){
   ${S.isAdmin?'<a class="btn btn-gold" href="#admin">لوحة الإدارة</a>':''}
   <div class="muted" style="text-align:center">${esc(S.user.email||'')}</div>
   <details class="muted" style="text-align:center;font-size:12px"><summary style="cursor:pointer">رقم الحساب (للإدارة)</summary><div style="direction:ltr;word-break:break-all;margin-top:6px">${esc(S.user.uid)}</div><button class="btn btn-line btn-sm" style="margin:8px auto 0" onclick="navigator.clipboard.writeText('${S.user.uid}').then(()=>toast('انسخ'))">نسخ</button></details>
+  <a class="link" href="#terms" style="text-align:center">الشروط والأحكام</a>
   <button class="btn btn-red" onclick="signOut()">تسجيل الخروج</button></main>`;
 }
 function viewAdd(){
@@ -319,6 +324,7 @@ function adCard(a){
   <div class="seg" style="font-size:13px"><span class="badge off">${esc(a.origin)}</span><span class="badge off">${esc(a.type)}</span>${a.age?`<span class="badge off">${esc(a.age)}</span>`:''}<span class="badge off">${ic(I.pin,'#6B5A45',12)}${esc(a.city)}</span></div>
   <div class="muted">${sell?'السعر':'الميزانية'}: <b style="color:var(--ink)">${a.price?money(a.price)+(sell?' للرأس':''):(sell?'على السوم':'مفتوحة')}</b></div>
   ${a.note?`<div class="muted">${esc(a.note)}</div>`:''}
+  ${adLive(a)?shareBtn(kindLbl+': '+a.count+' '+a.animal+' '+(a.breed||'')+' — '+a.city+' | مزاين الحلال','ad-'+a.id,true):''}
   ${n&&!mine?`<div class="grid2"><a class="btn btn-line" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent('السلام عليكم، بخصوص إعلانك في مزاين الحلال: '+(sell?'للبيع':'للشراء')+' '+a.count+' '+a.animal+' '+(a.breed||''))}">${ic(I.wa,'#4A2E1A',18)}واتساب</a><a class="btn btn-line" href="tel:+${n}">${ic(I.phone,'#4A2E1A',18)}اتصال</a></div>`:''}
   ${mine||S.isAdmin?`<div class="seg">${mine&&!adLive(a)?`<a class="btn btn-reg btn-sm" href="#payad-${a.id}">${a.status==='pending'?'ادفع '+adPrice()+' ريال وارفع الإيصال':'تجديد — '+adPrice()+' ريال'}</a>`:''}<button class="btn btn-red btn-sm" onclick="delAd('${a.id}')">حذف</button><span class="muted" style="align-self:center;font-size:12px">${adLive(a)?'باقي '+left+' يوم':a.status==='pending'?(a.receiptSent?'بانتظار المراجعة':'بانتظار الدفع'):'منتهي'}</span></div>`:''}</div>`;
 }
@@ -361,6 +367,7 @@ function viewNewAd(){
   <label class="f">صورة (اختياري)<input name="photo" type="file" accept="image/*" style="padding-top:10px"></label>
   <label class="f">ملاحظات<textarea name="note" rows="3" placeholder="مثال: مطعّمة، مفحوصة، التوصيل متاح"></textarea></label>
   <div class="notice">رسوم الإعلان ${adPrice()} ريال لمدة ${AD_DAYS} يوم. بعد ما تعبّي البيانات، تحوّل وترفع الإيصال، وينشر إعلانك بعد المراجعة.</div>
+<label style="display:flex;align-items:center;gap:10px;font-size:14px"><input type="checkbox" required style="width:20px;height:20px">أوافق على <a class="link" href="#terms" target="_blank">الشروط والأحكام</a></label>
   <button class="btn btn-dark" style="min-height:54px;font-size:17px">التالي: الدفع</button></form></main>`;
 }
 function viewPayAd(id){
@@ -388,10 +395,11 @@ function auctionCard(a){const open=aOpen(a);return `<a href="#auction-${a.id}" c
   <div class="stats"><div><small>${a.bidsCount?'أعلى سعر':'سعر الافتتاح'}</small><b>${money(a.currentPrice)}</b></div><div><small>المزايدات</small><b>${a.bidsCount||0}</b></div><div><small>${open?'باقي':'الحالة'}</small><b data-ends="${a.endsAt}">${left(a.endsAt-now())}</b></div></div></a>`}
 function viewAuctions(){
   const open=S.auctions.filter(aOpen),ended=S.auctions.filter(a=>!aOpen(a)).slice(0,10);
-  const canOpen=isLive(S.myMarah);
+  const unpaid=S.user?S.auctions.filter(a=>a.sellerId===S.user.uid&&!aOpen(a)&&a.bidsCount&&!a.feePaid):[];
+  const canOpen=isLive(S.myMarah)&&!unpaid.length;
   return `<div class="top"><h1 style="margin:0;font-size:28px">المزاد</h1><div class="muted" style="margin-top:4px">مزادات الصنف بالفيديو واللايف — رسوم الدخول ${entryFee()} ريال غير مستردة</div></div>
   <main><h2 class="title">المزادات المفتوحة</h2>${open.length?open.map(auctionCard).join(''):'<div class="empty">ما فيه مزادات مفتوحة الحين</div>'}
-  ${canOpen?`<a class="btn btn-dark" style="min-height:52px;font-size:16px;font-weight:800" href="#newauction">${ic(I.plus,'#FFFFFF',20,2.2)}افتح مزاد لحلالك</a>`:`<div class="notice">فتح المزاد متاح لأصحاب المرحان المشتركة. <a class="link" href="#account">سجّل مراحك</a></div>`}
+  ${canOpen?`<a class="btn btn-dark" style="min-height:52px;font-size:16px;font-weight:800" href="#newauction">${ic(I.plus,'#FFFFFF',20,2.2)}افتح مزاد لحلالك</a>`:unpaid.length?`<div class="notice">عندك رسوم بيع غير مدفوعة على مزاد «${esc(unpaid[0].title)}». <a class="link" href="#auction-${unpaid[0].id}">ادفعها</a> عشان تقدر تفتح مزاد جديد.</div>`:`<div class="notice">فتح المزاد متاح لأصحاب المرحان المشتركة. <a class="link" href="#account">سجّل مراحك</a></div>`}
   ${ended.length?'<h2 class="title">مزادات منتهية</h2>'+ended.map(auctionCard).join(''):''}</main>`;
 }
 function viewNewAuction(){
@@ -407,6 +415,8 @@ function viewNewAuction(){
   <label style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700"><input type="checkbox" name="live" style="width:22px;height:22px">المزاد بث مباشر (لايف)</label>
   <label class="f">وصف (اختياري)<textarea name="note" rows="3" placeholder="العمر، النسب، الجوائز…"></textarea></label>
   <div class="notice">المزايدون يدفعون رسوم دخول ${entryFee()} ريال. الفيديو يكون رابط يوتيوب أو تيك توك (فيديو أو لايف).</div>
+  <div class="notice">رسوم البيع على صاحب المزاد: ${sellerPct()}% من سعر البيع النهائي، تُدفع بعد انتهاء المزاد إذا فيه مزايدات.</div>
+  <label style="display:flex;align-items:center;gap:10px;font-size:14px"><input type="checkbox" required style="width:20px;height:20px">أوافق على <a class="link" href="#terms" target="_blank">الشروط والأحكام</a></label>
   <button class="btn btn-dark" style="min-height:54px;font-size:17px">افتح المزاد</button></form></main>`;
 }
 function viewAuction(id){
@@ -418,6 +428,10 @@ function viewAuction(id){
   if(!open){
     action=a.bidsCount?`<div class="card" style="background:var(--teal);color:#fff;border:0"><b style="font-size:18px">انتهى المزاد</b><div>الفائز: ${iWin?'أنت 🎉':esc(maskName(a.currentBidderName))} بسعر ${money(a.currentPrice)}</div></div>`:`<div class="notice">انتهى المزاد بدون مزايدات.</div>`;
     if(iWin){const s=S.marahs.find(m=>m.id===a.sellerId);const n=s&&waNum(s.phone);if(n)action+=`<a class="btn btn-dark" target="_blank" rel="noopener" href="https://wa.me/${n}?text=${encodeURIComponent('السلام عليكم، فزت بمزاد «'+a.title+'» في مزاين الحلال بسعر '+a.currentPrice+' ريال')}">${ic(I.wa,'#FFFFFF',18)}تواصل مع البائع</a>`}
+    if(mine&&a.bidsCount)action+=a.feePaid?`<div class="badge ok" style="align-self:flex-start">رسوم البيع مدفوعة ✓</div>`:`<div class="card"><b>رسوم البيع: ${money(sellerFee(a))}</b><div class="muted">${sellerPct()}% من سعر البيع ${money(a.currentPrice)}. حوّلها على الحساب وارفع الإيصال.</div>
+      <div class="row muted"><span>البنك</span><b style="color:var(--ink)">${esc(b.name)}</b></div><div class="row muted"><span>الآيبان</span><b style="color:var(--ink);direction:ltr">${esc(b.iban)}</b></div>
+      ${a.feeReceiptSent?'<div class="notice">استلمنا الإيصال، بانتظار المراجعة.</div>':''}
+      <label class="btn btn-reg" style="cursor:pointer">ارفع إيصال رسوم البيع<input type="file" accept="image/*" id="feeReceipt" data-a="${a.id}" class="sr"></label></div>`;
     if(mine&&a.bidsCount)action+=`<button class="btn btn-dark" onclick="winnerContact('${a.id}')">بيانات الفائز للتواصل</button><div id="winnerBox"></div>`;
   }else if(!S.user)action=`<button class="btn btn-dark" onclick="signIn()">سجّل دخولك للمزايدة</button>`;
   else if(mine)action=`<div class="notice">هذا مزادك. تقدر تتابع المزايدات هنا لحظة بلحظة.</div>`;
@@ -426,7 +440,7 @@ function viewAuction(id){
     <button type="button" class="btn btn-line btn-sm" style="align-self:flex-start" onclick="copyIban()">نسخ الآيبان</button>
     <label class="f">جوالك (للتواصل لو فزت)<input name="phone" required inputmode="tel" placeholder="05xxxxxxxx" value="${esc(S.myMarah?S.myMarah.phone:'')}"></label>
     <label class="f">صورة إيصال التحويل<input name="receipt" type="file" accept="image/*" required style="padding-top:10px"></label>
-    <label style="display:flex;align-items:center;gap:10px;font-size:14px"><input type="checkbox" required style="width:20px;height:20px">أوافق إن الرسوم غير مستردة</label>
+    <label style="display:flex;align-items:center;gap:10px;font-size:14px"><input type="checkbox" required style="width:20px;height:20px">أوافق إن الرسوم غير مستردة وعلى <a class="link" href="#terms" target="_blank">الشروط والأحكام</a></label>
     <button class="btn btn-dark">إرسال طلب الدخول</button></form>`;
   else if(entry.status!=='approved')action=`<div class="notice">استلمنا طلب دخولك، وبتقدر تزايد بعد مراجعة الإيصال.</div>`;
   else{const nx=Number(a.currentPrice)+(a.bidsCount?Number(a.minStep):0);
@@ -435,14 +449,26 @@ function viewAuction(id){
     ${iWin?'<div class="badge ok" style="align-self:flex-start">أنت صاحب أعلى سعر</div>':''}</div>`}
   return `<main><div class="head">${backBtn()}<h1 style="font-size:22px">${esc(a.title)}</h1></div>
   ${emb?`<div class="card" style="padding:0;overflow:hidden"><iframe title="فيديو المزاد" src="${emb}" style="width:100%;aspect-ratio:${/tiktok/.test(emb)?'9/16':'16/9'};border:0;display:block" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`:''}
-  <a class="btn btn-line" href="${esc(a.videoUrl)}" target="_blank" rel="noopener">${ic(I.play,'#4A2E1A',18)}${a.live?'افتح البث المباشر':'افتح الفيديو'}</a>
+  <div class="grid2"><a class="btn btn-line" href="${esc(a.videoUrl)}" target="_blank" rel="noopener">${ic(I.play,'#4A2E1A',18)}${a.live?'البث المباشر':'الفيديو'}</a>${shareBtn('مزاد: '+a.title+' — '+(a.marahName||'')+' | مزاين الحلال','auction-'+a.id)}</div>
   <div class="muted">${esc(a.marahName||'')} — ${esc(a.breed||'')} ${esc(a.type||'')}${a.live?' — <b style="color:#B42318">● لايف</b>':''}</div>
   ${a.note?`<div class="muted">${esc(a.note)}</div>`:''}
   <div class="stats"><div><small>${a.bidsCount?'أعلى سعر':'سعر الافتتاح'}</small><b style="font-size:18px">${money(a.currentPrice)}</b></div><div><small>أقل زيادة</small><b>${money(a.minStep)}</b></div><div><small>${open?'باقي':'الحالة'}</small><b data-ends="${a.endsAt}">${left(a.endsAt-now())}</b></div></div>
   ${action}
   <h2 class="title">المزايدات (${a.bidsCount||0})</h2>
   ${S.bids.length?S.bids.map((x,i)=>`<div class="item" style="flex-direction:row;align-items:center;justify-content:space-between"><span>${i===0?'🥇 ':''}${S.user&&x.uid===S.user.uid?'أنت':esc(maskName(x.name))}</span><b>${money(x.amount)}</b></div>`).join(''):'<div class="empty">ما فيه مزايدات للحين</div>'}
-  <div class="muted" style="font-size:12px">رسوم الدخول ${entryFee()} ريال غير مستردة. الاتفاق على التسليم والدفع يكون بين البائع والفائز.</div></main>`;
+  <div class="muted" style="font-size:12px">رسوم الدخول ${entryFee()} ريال غير مستردة. الاتفاق على التسليم والدفع يكون بين البائع والفائز. <a class="link" href="#terms">الشروط والأحكام</a></div></main>`;
+}
+function viewTerms(){
+  const sec=(t,items)=>`<div class="card"><b style="font-size:17px">${t}</b>${items.map(x=>`<div style="line-height:1.9">• ${x}</div>`).join('')}</div>`;
+  return `<main><div class="head">${backBtn()}<h1>الشروط والأحكام</h1></div>
+  <div class="muted">باستخدامك لمنصة «مزاين الحلال» توافق على الشروط التالية:</div>
+  ${sec('طبيعة المنصة',['«مزاين الحلال» منصة إعلانية تعرض المرحان وإعلانات الحلال والمزادات، وتسهّل التواصل بين البائع والمشتري.','المنصة ليست طرفاً في أي عملية بيع أو شراء، ولا تستلم قيمة الحلال نيابةً عن أحد.'])}
+  ${sec('إخلاء المسؤولية',['<b>الموقع غير مسؤول عن أي خلاف ينشأ بين أصحاب الحلال</b>، ولا عن تمام البيع من عدمه، ويرجع ذلك للتواصل بين الطرفين فيما بعد.','صحة البيانات والصور والفيديو والأسعار والأوصاف والنسب مسؤولية صاحب الإعلان أو المزاد وحده.','ننصح بمعاينة الحلال والتأكد منه قبل الدفع أو الاستلام.'])}
+  ${sec('الرسوم',[`اشتراك المرحان: ${price()} ريال شهرياً.`,`إعلان سوق الحلال: ${adPrice()} ريال لمدة ${AD_DAYS} يوم.`,`دخول المزاد للمزايدين: ${entryFee()} ريال لكل مزاد.`,`رسوم البيع على صاحب المزاد: ${sellerPct()}% من سعر البيع النهائي، تُدفع بعد انتهاء المزاد إذا وُجدت مزايدات، ولا يُفتح له مزاد جديد قبل سدادها.`,'<b>جميع الرسوم غير مستردة</b>، ويتم الدفع بتحويل بنكي ورفع الإيصال، ويُفعّل الطلب بعد المراجعة.'])}
+  ${sec('المزاد',['الفائز صاحب أعلى سعر عند انتهاء وقت المزاد.','المزايدة التزام من المزايد بالشراء بالسعر الذي قدّمه، والمزايدات الوهمية تعرّض صاحبها للإيقاف.','الاتفاق على الدفع والتسليم والنقل يكون بين البائع والفائز مباشرة.'])}
+  ${sec('المحتوى',['يُمنع نشر إعلانات وهمية أو مضللة أو مخالفة للأنظمة.','للإدارة حذف أي إعلان أو مزاد أو حساب مخالف دون استرداد الرسوم.'])}
+  ${sec('الخصوصية',['رقم الجوال الذي تضيفه في المراح أو الإعلان يظهر للمستخدمين لغرض التواصل.','رقم جوال المزايد يظهر للبائع فقط إذا فاز بالمزاد.'])}
+  ${sec('تعديل الشروط',['يحق للإدارة تعديل هذه الشروط والرسوم في أي وقت، ويسري التعديل من تاريخ نشره.'])}</main>`;
 }
 function viewRequests(){
   const live=isLive(S.myMarah);
@@ -466,6 +492,7 @@ function viewAdmin(){
   return `<main><div class="head">${backBtn()}<h1>لوحة الإدارة</h1></div>
   <form id="settingsForm" class="card"><b>الاشتراك والحساب البنكي</b>
   <label class="f">قيمة الاشتراك الشهري (ريال)<input name="price" type="number" min="1" inputmode="numeric" value="${price()}" required></label>
+  <label class="f">رسوم البيع في المزاد (%)<input name="sellerPct" type="number" min="0" step="0.1" inputmode="decimal" value="${sellerPct()}" required></label>
   <label class="f">رسوم دخول المزاد (ريال)<input name="entryFee" type="number" min="1" inputmode="numeric" value="${entryFee()}" required></label>
   <label class="f">رسوم إعلان السوق (ريال)<input name="adPrice" type="number" min="1" inputmode="numeric" value="${adPrice()}" required></label>
   <label class="f">اسم البنك<input name="bankName" placeholder="مثال: مصرف الراجحي" value="${esc(b.name===NOT_SET?'':b.name)}"></label>
@@ -474,7 +501,7 @@ function viewAdmin(){
   <button class="btn btn-dark">حفظ</button></form>
   <h2 class="title">إيصالات بانتظار المراجعة (${newR.length})</h2>
   ${newR.length?newR.map(r=>`<div class="item"><b>${esc(r.marahName)}</b><div class="muted">${r.createdAt?new Date(r.createdAt).toLocaleString('ar-SA'):''}</div><img src="${r.image}" alt="إيصال">
-  <div class="grid2">${r.entryId?`<button class="btn btn-dark" onclick="approveEntry('${r.id}','${r.entryId}')">قبول دخول المزاد</button>`:r.adId?`<button class="btn btn-dark" onclick="approveAd('${r.id}','${r.adId}')">نشر الإعلان</button>`:`<button class="btn btn-dark" onclick="approve('${r.id}','${r.uid}')">تفعيل اشتراك شهر</button>`}<button class="btn btn-red" onclick="rejectR('${r.id}')">رفض</button></div></div>`).join(''):'<div class="empty">ما فيه إيصالات جديدة</div>'}
+  <div class="grid2">${r.feeFor?`<button class="btn btn-dark" onclick="approveFee('${r.id}','${r.feeFor}')">تأكيد رسوم البيع</button>`:r.entryId?`<button class="btn btn-dark" onclick="approveEntry('${r.id}','${r.entryId}')">قبول دخول المزاد</button>`:r.adId?`<button class="btn btn-dark" onclick="approveAd('${r.id}','${r.adId}')">نشر الإعلان</button>`:`<button class="btn btn-dark" onclick="approve('${r.id}','${r.uid}')">تفعيل اشتراك شهر</button>`}<button class="btn btn-red" onclick="rejectR('${r.id}')">رفض</button></div></div>`).join(''):'<div class="empty">ما فيه إيصالات جديدة</div>'}
   <h2 class="title">كل المرحان (${S.allMarahs.length})</h2>
   ${S.allMarahs.map(m=>{const live=isLive(m);return `<div class="item"><div class="row"><b>${esc(m.name)}</b>${live?'<span class="badge ok">مفعّل</span>':'<span class="badge off">غير مفعّل</span>'}</div>
   <div class="muted">${esc(m.ownerName)} — ${esc(m.region)} — <span style="direction:ltr">${esc(m.phone)}</span></div>
@@ -507,6 +534,8 @@ function render(){
   else if(h==='requests'||h==='market'){html=viewMarket();tab='market'}
   else if(h==='newad'){html=viewNewAd();tab='market'}
   else if(h==='myads'){html=viewMyAds();tab='market'}
+  else if(h.startsWith('ad-')){const a=S.ads.find(x=>x.id===h.slice(3));html=`<main><div class="head">${backBtn()}<h1>إعلان</h1></div>${a?adCard(a):'<div class="empty">'+(S.ads.length?'الإعلان غير موجود أو انتهى':'جاري التحميل…')+'</div>'}<a class="btn btn-line" href="#market">كل إعلانات السوق</a></main>`;tab='market'}
+  else if(h==='terms'){html=viewTerms();tab='account'}
   else if(h.startsWith('payad-')){html=viewPayAd(h.slice(6));tab='market'}
   else if(h==='oldrequests'){html=viewRequests();tab='market'}
   else if(h==='account'){html=viewAccount();tab='account'}
@@ -569,7 +598,7 @@ function bind(){
     try{await db.collection('requests').add({uid:S.user.uid,breed:f.get('breed'),type:f.get('type'),count:Number(f.get('count')),city:f.get('city').trim(),phone:f.get('phone').trim(),createdAt:now()});rf.reset();toast('انتشر طلبك')}catch(err){toast('صار خطأ: '+(err.code||err.message))}btn.disabled=false};
   const sf=document.getElementById('settingsForm');
   if(sf)sf.onsubmit=async e=>{e.preventDefault();const f=new FormData(sf);const btn=sf.querySelector('button');btn.disabled=true;
-    try{await db.collection('settings').doc('app').set({price:Number(f.get('price'))||99,adPrice:Number(f.get('adPrice'))||33,entryFee:Number(f.get('entryFee'))||200,bankName:f.get('bankName').trim(),holder:f.get('holder').trim(),iban:f.get('iban').trim()},{merge:true});toast('انحفظت الإعدادات')}catch(err){toast('صار خطأ: '+(err.code||err.message))}btn.disabled=false};
+    try{await db.collection('settings').doc('app').set({price:Number(f.get('price'))||99,adPrice:Number(f.get('adPrice'))||33,entryFee:Number(f.get('entryFee'))||200,sellerPct:Number(f.get('sellerPct'))||0.5,bankName:f.get('bankName').trim(),holder:f.get('holder').trim(),iban:f.get('iban').trim()},{merge:true});toast('انحفظت الإعدادات')}catch(err){toast('صار خطأ: '+(err.code||err.message))}btn.disabled=false};
   const ar=document.getElementById('adReceipt');
   if(ar)ar.onchange=async()=>{if(!ar.files.length)return;toast('جاري رفع الإيصال…');const id=ar.dataset.ad;const a=S.ads.find(x=>x.id===id);
     try{const image=await compress(ar.files[0],1200,.6);await db.collection('receipts').add({uid:S.user.uid,adId:id,kindOf:'ad',marahName:'إعلان: '+(a.kind==='بيع'?'للبيع ':'للشراء ')+a.count+' '+a.animal+' '+(a.breed||'')+' — '+a.city,image,status:'new',createdAt:now()});
@@ -587,6 +616,10 @@ function bind(){
       await db.collection('entries').doc(eid).set({uid:S.user.uid,auctionId:aid,name:S.user.displayName||'',phone:f.get('phone').trim(),status:'pending',createdAt:now()});
       await db.collection('receipts').add({uid:S.user.uid,entryId:eid,kindOf:'entry',marahName:'دخول مزاد: '+(a?a.title:''),image,status:'new',createdAt:now()});
       toast('انرسل طلب الدخول')}catch(err){toast('صار خطأ: '+(err.code||err.message));btn.disabled=false;btn.textContent='إرسال طلب الدخول'}};
+  const fr=document.getElementById('feeReceipt');
+  if(fr)fr.onchange=async()=>{if(!fr.files.length)return;toast('جاري رفع الإيصال…');const aid=fr.dataset.a;const a=S.auctions.find(x=>x.id===aid);
+    try{const image=await compress(fr.files[0],1200,.6);await db.collection('receipts').add({uid:S.user.uid,feeFor:aid,kindOf:'sellerFee',marahName:'رسوم بيع مزاد: '+a.title+' ('+sellerFee(a)+' ريال)',image,status:'new',createdAt:now()});
+      await db.collection('auctions').doc(aid).update({feeReceiptSent:true});toast('استلمنا الإيصال')}catch(err){toast('صار خطأ: '+(err.code||err.message))}};
   const bf=document.getElementById('bidForm');
   if(bf)bf.onsubmit=e=>{e.preventDefault();const v=Number(new FormData(bf).get('amount'));if(v)placeBid((location.hash||'').slice(9),v)};
   const rc=document.getElementById('receipt');
@@ -607,7 +640,11 @@ async function placeBid(id,amount){
 async function winnerContact(id){const a=S.auctions.find(x=>x.id===id);const box=document.getElementById('winnerBox');
   try{const d=await db.collection('entries').doc(id+'_'+a.currentBidder).get();const e=d.data()||{};const n=waNum(e.phone);
     box.innerHTML=n?`<a class="btn btn-line" target="_blank" rel="noopener" href="https://wa.me/${n}">واتساب الفائز: ${esc(e.name||'')}</a>`:'<div class="muted">ما لقينا رقم الفائز</div>'}catch(err){box.innerHTML='<div class="muted">تعذّر جلب البيانات</div>'}}
+async function approveFee(rid,aid){try{await db.collection('auctions').doc(aid).update({feePaid:true});await db.collection('receipts').doc(rid).update({status:'done'});toast('تم تأكيد رسوم البيع')}catch(e){toast('صار خطأ')}}
 async function approveEntry(rid,eid){try{await db.collection('entries').doc(eid).update({status:'approved'});await db.collection('receipts').doc(rid).update({status:'done'});toast('انقبل دخول المزايد')}catch(e){toast('صار خطأ')}}
+async function shareIt(text,hash){const url=BASE()+'#'+hash;
+  if(navigator.share){try{await navigator.share({title:'مزاين الحلال',text,url});return}catch(e){if(e.name==='AbortError')return}}
+  window.open('https://wa.me/?text='+encodeURIComponent(text+'\n'+url),'_blank')}
 async function delAd(id){if(!confirm('تحذف الإعلان؟'))return;try{await db.collection('ads').doc(id).delete();toast('انحذف الإعلان')}catch(e){toast('صار خطأ')}}
 async function approveAd(rid,adId){const a=S.ads.find(x=>x.id===adId)||{};const base=Math.max(now(),a.status==='active'?(a.expiresAt||0):0);
   try{await db.collection('ads').doc(adId).update({status:'active',receiptSent:false,expiresAt:base+AD_DAYS*86400000});await db.collection('receipts').doc(rid).update({status:'done'});toast('انتشر الإعلان 30 يوم')}catch(e){toast('صار خطأ')}}
