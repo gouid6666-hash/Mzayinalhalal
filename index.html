@@ -302,9 +302,9 @@ function viewSubscribe(){
 function viewMazayen(){
   const ranked=[...S.marahs].sort((a,b)=>(b.awards||0)-(a.awards||0)).slice(0,10);
   const col=['#B8862E','#D9CDB6','#E8D5B5'];
-  return `<div class="top dark"><h1 style="margin:0;font-size:28px">المزاين</h1><div style="color:#E3F4F2;margin-top:4px">مسابقات جمال الحلال وترتيب المرحان</div></div>
+  return `<div class="top dark"><h1 style="margin:0;font-size:28px">المزاين</h1><div style="color:#E3F4F2;margin-top:4px">مسابقات الصنف وترتيب المرحان</div></div>
   <main><div class="card" style="background:var(--teal);color:#fff;border:0"><span class="badge" style="align-self:flex-start;background:var(--gold);color:var(--ink)">المزاين القادمة</span>
-  <h2 class="title">يُعلن عنها قريباً</h2><div style="color:#E3F4F2;font-size:14px">تابعنا، وأول ما تنعلن المزاين تقدر تسجّل حلالك من هنا.</div></div>
+  <h2 class="title">يُعلن عنها قريباً</h2><div style="color:#E3F4F2;font-size:14px">تابعنا، وأول ما نعلن عن المزاد تقدر تسجّل حلالك من هنا.</div></div>
   <h2 class="title">ترتيب المرحان</h2>
   ${ranked.length?ranked.map((m,i)=>`<a href="#marah-${m.id}" class="item" style="flex-direction:row;align-items:center;gap:12px;text-decoration:none;color:inherit"><span class="rank" style="background:${col[i]||'#F5EEDF'}">${i+1}</span><div style="flex:1"><b>${esc(m.name)}</b><div class="muted" style="font-size:13px">${esc(m.region||'')}</div></div><b>${m.awards||0} نقطة</b></a>`).join(''):'<div class="empty">الترتيب يبدأ بعد أول مزاين</div>'}
   <div class="muted" style="font-size:13px">كل فوز في المزاين يضيف نقاط للمراح ويرفع ترتيبه.</div></main>`;
