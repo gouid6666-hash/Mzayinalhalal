@@ -25,3 +25,6 @@ window.SUB_PRICE = 99;
 
 // 4) رسوم إعلان سوق الحلال (30 يوم)
 window.AD_PRICE = 33;
+
+// 5) رسوم دخول المزاد (غير مستردة)
+window.ENTRY_FEE = 200;
