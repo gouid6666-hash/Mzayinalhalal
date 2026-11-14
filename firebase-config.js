@@ -21,4 +21,4 @@ window.BANK = {
 };
 
 // 3) قيمة الاشتراك الشهري بالريال
-window.SUB_PRICE = 50;
+window.SUB_PRICE = 99;
